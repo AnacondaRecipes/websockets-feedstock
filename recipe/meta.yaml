@@ -1,26 +1,27 @@
+{% set name = "websockets" %}
 {% set version = "10.4" %}
 
 package:
-  name: websockets
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/w/websockets/websockets-{{ version }}.tar.gz
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: eef610b23933c54d5d921c92578ae5f89813438fded840c2e9809d378dc765d3
 
 build:
-  number: 1
-  script: {{ PYTHON }} -m pip install . -vv
+  number: 0
   skip: true  # [py<37]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps
 
 requirements:
   build:
-    - python                                 # [build_platform != target_platform]
-    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - {{ compiler('c') }}
   host:
     - python
     - pip
+    - setuptools
+    - wheel
   run:
     - python
 
@@ -33,7 +34,7 @@ test:
     - pip
 
 about:
-  home: https://websockets.readthedocs.io/en/stable/index.html
+  home: https://websockets.readthedocs.io/
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE
@@ -45,7 +46,7 @@ about:
     standard asynchronous I/O framework, it provides a straightforward API
     based on coroutines, making it easy to write highly concurrent
     applications.
-  doc_url: https://websockets.readthedocs.io/en/stable/index.html
+  doc_url: https://websockets.readthedocs.io/
   dev_url: https://github.com/aaugustin/websockets
 
 extra:
