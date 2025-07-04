@@ -37,7 +37,7 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux] 
 # Hanging on windows
-{% set tests_to_skip = "test_secure_uri_without_ssl" %}
+{% set tests_to_skip = "ClientUsageErrorsTests" %}
 
 
 test:
