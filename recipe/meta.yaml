@@ -33,8 +33,7 @@ requirements:
 # OSError: [Errno 99] error while attempting to bind on address ('::1', 0, 0, 0): cannot assign requested address
 {% set ignore_tests = "--ignore=gh/tests/legacy/test_auth.py" %}  # [linux] 
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/legacy/test_client_server.py" %}  # [linux]
-# test_client.py Randomly hanging on windows
-{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux or win] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux] 
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux] 
 
