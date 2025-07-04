@@ -29,6 +29,13 @@ requirements:
   run:
     - python
 
+{% set ignore_tests = "" %}
+# OSError: [Errno 99] error while attempting to bind on address ('::1', 0, 0, 0): cannot assign requested address
+{% set ignore_tests = "--ignore=gh/tests/legacy/test_auth.py" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/legacy/test_client_server" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
+
 test:
   source_files:
     - gh/tests
@@ -55,7 +62,7 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest -v gh/tests
+    - pytest {{ ignore_tests }} -v gh/tests
     - websockets --version
   requires:
     - pip
