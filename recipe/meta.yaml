@@ -37,7 +37,6 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux] 
 
-
 test:
   source_files:
     - gh/tests
