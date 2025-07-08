@@ -1,19 +1,23 @@
 {% set name = "websockets" %}
-{% set version = "10.4" %}
+{% set version = "15.0.1" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: eef610b23933c54d5d921c92578ae5f89813438fded840c2e9809d378dc765d3
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: 82544de02076bafba038ce055ee6412d68da13ab47f0c60cab827346de828dee
+  - url: https://github.com/python-websockets/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
+    sha256: 8451495265af3e368f794c4dc15c99ce90c771d95560f542bff8c64b5455af3b
+    folder: gh
 
 build:
-  number: 2
-  skip: true  # [py<37]
-  script: {{ PYTHON }} -m pip install . -vv --no-deps
-
+  number: 0
+  skip: true  # [py<39]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  entry_points:
+    - websockets = websockets.cli:main
 requirements:
   build:
     - {{ compiler('c') }}
@@ -25,29 +29,66 @@ requirements:
   run:
     - python
 
+{% set ignore_tests = "" %}
+# OSError: [Errno 99] error while attempting to bind on address ('::1', 0, 0, 0): cannot assign requested address
+{% set ignore_tests = "--ignore=gh/tests/legacy/test_auth.py" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/legacy/test_client_server.py" %}  # [linux]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux]
+
 test:
+  source_files:
+    - gh/tests
   imports:
     - websockets
+    - websockets.asyncio
+    - websockets.cli
+    - websockets.client
+    - websockets.datastructures
+    - websockets.exceptions
+    - websockets.frames
+    - websockets.headers
+    - websockets.http11
+    - websockets.imports
+    - websockets.legacy
+    - websockets.protocol
+    - websockets.server
+    - websockets.streams
+    - websockets.sync
+    - websockets.typing
+    - websockets.uri
+    - websockets.utils
+    - websockets.version
   commands:
     - pip check
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    # Tests on Windows randomly hang or fail to start without any issue.
+    - pytest {{ ignore_tests }} -v gh/tests  # [unix]
+    - websockets --version
   requires:
     - pip
+    - pytest
+    - werkzeug
 
 about:
-  home: https://websockets.readthedocs.io/
+  home: https://websockets.readthedocs.io
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE
-  summary: A library for developing WebSocket servers and clients in Python.
+  summary: websockets is a library for building WebSocket servers and clients in 
+    Python with a focus on correctness, simplicity, robustness, and performance.
   description: |
-    websockets is a library for developing WebSocket servers and clients in
-    Python. It implements RFC 6455 with a focus on correctness and simplicity.
-    It passes the Autobahn Testsuite. Built on top of asyncio, Python's
-    standard asynchronous I/O framework, it provides a straightforward API
-    based on coroutines, making it easy to write highly concurrent
-    applications.
-  doc_url: https://websockets.readthedocs.io/
-  dev_url: https://github.com/aaugustin/websockets
+    websockets is a library for building WebSocket servers and clients in Python with a focus on correctness, simplicity, robustness, and performance.
+    It supports several network I/O and control flow paradigms.
+    The default implementation builds upon asyncio, Python’s built-in asynchronous I/O library. 
+    It provides an elegant coroutine-based API. It’s ideal for servers that handle many client connections.
+    The threading implementation is a good alternative for clients, especially if you aren’t familiar with asyncio. 
+    It may also be used for servers that handle few client connections.
+    The Sans-I/O implementation is designed for integrating in third-party libraries, 
+    typically application servers, in addition being used internally by websockets.
+  doc_url: https://websockets.readthedocs.io
+  dev_url: https://github.com/python-websockets/websockets
 
 extra:
   recipe-maintainers:
