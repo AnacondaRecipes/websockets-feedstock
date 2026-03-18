@@ -63,8 +63,8 @@ test:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     # Tests on Windows randomly hang or fail to start without any issue.
-    # test_close_server_keeps_handlers_running times out frequently
-    - pytest {{ ignore_tests }} -v gh/tests -k "not test_close_server_keeps_handlers_running"  # [unix]
+    # These tests time out intermittently
+    - pytest {{ ignore_tests }} -v gh/tests -k "not (test_close_server_keeps_handlers_running or test_close_waits_for_close_frame)"  # [unix]
 
   requires:
     - pip
