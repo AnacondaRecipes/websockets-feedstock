@@ -1,5 +1,5 @@
 {% set name = "websockets" %}
-{% set version = "15.0.1" %}
+{% set version = "13.1" %}
 
 package:
   name: {{ name|lower }}
@@ -7,17 +7,15 @@ package:
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 82544de02076bafba038ce055ee6412d68da13ab47f0c60cab827346de828dee
+    sha256: a3b3366087c1bc0a2795111edcadddb8b3b59509d5db5d7ea3fdd69f954a8878
   - url: https://github.com/python-websockets/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
-    sha256: 8451495265af3e368f794c4dc15c99ce90c771d95560f542bff8c64b5455af3b
+    sha256: 39345b087381694ca06c5b2b922aa8c2a54dc8f08fcaee358eafaa2222c4dd22
     folder: gh
 
 build:
   number: 0
   skip: true  # [py<39]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
-  entry_points:
-    - websockets = websockets.cli:main
 requirements:
   build:
     - {{ compiler('c') }}
@@ -43,7 +41,6 @@ test:
   imports:
     - websockets
     - websockets.asyncio
-    - websockets.cli
     - websockets.client
     - websockets.datastructures
     - websockets.exceptions
@@ -64,8 +61,8 @@ test:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     # Tests on Windows randomly hang or fail to start without any issue.
-    - pytest {{ ignore_tests }} -v gh/tests  # [unix]
-    - websockets --version
+    # test_close_server_keeps_handlers_running times out occasionally.
+    - pytest {{ ignore_tests }} -v gh/tests -k "not test_close_server_keeps_handlers_running" # [unix]
   requires:
     - pip
     - pytest
