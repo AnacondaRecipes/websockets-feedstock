@@ -1,15 +1,22 @@
 {% set name = "websockets" %}
-{% set version = "15.0.1" %}
+{% set version = "16.0" %}
+{% set ignore_tests = "" %}
+{% set ignore_tests = "--ignore=gh/tests/legacy/test_auth.py" %}  # [linux]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/legacy/test_client_server.py" %}  # [linux]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux]
+{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux]
 
+# OSError: [Errno 99] error while attempting to bind on address ('::1', 0, 0, 0): cannot assign requested address
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 82544de02076bafba038ce055ee6412d68da13ab47f0c60cab827346de828dee
+    sha256: 5f6261a5e56e8d5c42a4497b364ea24d94d9563e8fbd44e78ac40879c60179b5
   - url: https://github.com/python-websockets/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
-    sha256: 8451495265af3e368f794c4dc15c99ce90c771d95560f542bff8c64b5455af3b
+    sha256: c720700d313af5d1c61372da62d78c5b6192ed09871367df65a8e1087b60b1f0
     folder: gh
 
 build:
@@ -18,6 +25,7 @@ build:
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   entry_points:
     - websockets = websockets.cli:main
+
 requirements:
   build:
     - {{ compiler('c') }}
@@ -28,14 +36,6 @@ requirements:
     - wheel
   run:
     - python
-
-{% set ignore_tests = "" %}
-# OSError: [Errno 99] error while attempting to bind on address ('::1', 0, 0, 0): cannot assign requested address
-{% set ignore_tests = "--ignore=gh/tests/legacy/test_auth.py" %}  # [linux] 
-{% set ignore_tests = ignore_tests + " --ignore=gh/tests/legacy/test_client_server.py" %}  # [linux]
-{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_client.py" %}  # [linux] 
-{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux] 
-{% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux]
 
 test:
   source_files:
@@ -76,16 +76,16 @@ about:
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE
-  summary: websockets is a library for building WebSocket servers and clients in 
+  summary: websockets is a library for building WebSocket servers and clients in
     Python with a focus on correctness, simplicity, robustness, and performance.
   description: |
     websockets is a library for building WebSocket servers and clients in Python with a focus on correctness, simplicity, robustness, and performance.
     It supports several network I/O and control flow paradigms.
-    The default implementation builds upon asyncio, Python’s built-in asynchronous I/O library. 
+    The default implementation builds upon asyncio, Python’s built-in asynchronous I/O library.
     It provides an elegant coroutine-based API. It’s ideal for servers that handle many client connections.
-    The threading implementation is a good alternative for clients, especially if you aren’t familiar with asyncio. 
+    The threading implementation is a good alternative for clients, especially if you aren’t familiar with asyncio.
     It may also be used for servers that handle few client connections.
-    The Sans-I/O implementation is designed for integrating in third-party libraries, 
+    The Sans-I/O implementation is designed for integrating in third-party libraries,
     typically application servers, in addition being used internally by websockets.
   doc_url: https://websockets.readthedocs.io
   dev_url: https://github.com/python-websockets/websockets
