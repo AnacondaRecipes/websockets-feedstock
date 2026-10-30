@@ -70,6 +70,7 @@ test:
   requires:
     - pip
     - pytest
+    - trio
     - werkzeug
 
 about:
