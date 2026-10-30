@@ -1,20 +1,20 @@
 {% set name = "websockets" %}
-{% set version = "16.0" %}
+{% set version = "17.3" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 5f6261a5e56e8d5c42a4497b364ea24d94d9563e8fbd44e78ac40879c60179b5
+  - url: https://files.pythonhosted.org/packages/30/4b/4692be6d5bf739ed049b3813901c42091f8c054df89d5c089343823dea0d/websockets-17.3.tar.gz
+    sha256: 1c7dd93a1c9f89297471493674b1fc1d9467cafd45374f2172213046bdb3a329
   - url: https://github.com/python-websockets/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
-    sha256: c720700d313af5d1c61372da62d78c5b6192ed09871367df65a8e1087b60b1f0
+    sha256: f80496c1d689e629c184055e15e27734251c7214841d486428c15bed185162ee
     folder: gh
 
 build:
-  number: 1
-  skip: true  # [py<310]
+  number: 0
+  skip: true  # [py<311]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   entry_points:
     - websockets = websockets.cli:main
