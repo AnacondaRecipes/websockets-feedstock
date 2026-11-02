@@ -45,6 +45,15 @@ requirements:
 # instead of 2 (AssertionError: 3 != 2 at test_client.py:220). Upstream still asserts
 # the same counts in 17.4, so deselect instead of patching the test.
 {% set ignore_tests = ignore_tests + " --deselect=gh/tests/sync/test_client.py::ClientTests::test_reconnect" %}  # [osx and arm64]
+# Consequence of the WEBSOCKETS_TESTS_TIMEOUT_FACTOR=500 set below, not a product
+# defect. SlowOpeningHandshakeProtocol.process_request sleeps 10*MS, i.e. 5s at
+# factor 500, but the test helper's stop_server() tears down with a hard-coded
+# asyncio.wait_for(server.wait_closed(), timeout=1). The cancelled client leaves
+# the connection handler inside that sleep, so teardown raises
+# TimeoutError from asyncio/tasks.py via test_client_server.py:274.
+# The test is unviable whenever 10*MS >= 1s (factor >= 100), which is why it fails
+# on all osx-arm64 Pythons (py3.11-py3.15) in graph e13b266b.
+{% set ignore_tests = ignore_tests + " --deselect=gh/tests/legacy/test_client_server.py::ClientServerTests::test_client_connect_canceled_during_handshake" %}  # [osx and arm64]
 test:
   source_files:
     - gh/tests
