@@ -1,5 +1,5 @@
 {% set name = "websockets" %}
-{% set version = "16.0" %}
+{% set version = "17.3" %}
 
 package:
   name: {{ name|lower }}
@@ -7,14 +7,14 @@ package:
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 5f6261a5e56e8d5c42a4497b364ea24d94d9563e8fbd44e78ac40879c60179b5
+    sha256: 1c7dd93a1c9f89297471493674b1fc1d9467cafd45374f2172213046bdb3a329
   - url: https://github.com/python-websockets/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
-    sha256: c720700d313af5d1c61372da62d78c5b6192ed09871367df65a8e1087b60b1f0
+    sha256: f80496c1d689e629c184055e15e27734251c7214841d486428c15bed185162ee
     folder: gh
 
 build:
   number: 0
-  skip: true  # [py<310]
+  skip: true  # [py<311]
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
   entry_points:
     - websockets = websockets.cli:main
@@ -38,6 +38,14 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux]
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux]
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/sync/test_connection.py" %}  # [osx]
+# Flaky on osx-arm64: server sleeps 3*MS before the first connection, client uses
+# open_timeout=3*MS, so the reconnect count races (3 != 2, test_client.py:220).
+# Upstream 17.4 still asserts it, so deselect rather than patch.
+{% set ignore_tests = ignore_tests + " --deselect=gh/tests/sync/test_client.py::ClientTests::test_reconnect" %}  # [osx and arm64]
+# Consequence of the factor below, not a product defect: server-side handshake sleep
+# is 10*MS (5s at factor 500) but the helper tears down with wait_for(..., timeout=1),
+# so teardown always times out (test_client_server.py:274).
+{% set ignore_tests = ignore_tests + " --deselect=gh/tests/legacy/test_client_server.py::ClientServerTests::test_client_connect_canceled_during_handshake" %}  # [osx and arm64]
 test:
   source_files:
     - gh/tests
@@ -64,12 +72,17 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    # osx-arm64 workers are slow: MS = 1ms * this factor, and at the default the timing
+    # tests race (test_keepalive_is_enabled, graph d8f66fae). Upstream does the same for
+    # released builds (python-websockets/websockets#1509).
+    - export WEBSOCKETS_TESTS_TIMEOUT_FACTOR=500  # [osx and arm64]
     # Tests on Windows randomly hang or fail to start without any issue.
     - pytest {{ ignore_tests }} -v gh/tests  # [unix]
     - websockets --version
   requires:
     - pip
     - pytest
+    - trio
     - werkzeug
 
 about:
