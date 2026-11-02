@@ -71,6 +71,14 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    # osx-arm64 CI workers are slow and noisy, and the suite's timing unit is
+    # MS = 1ms * WEBSOCKETS_TESTS_TIMEOUT_FACTOR. Upstream recommends raising this
+    # factor on build farms and does it automatically for released builds
+    # (https://github.com/python-websockets/websockets/issues/1509). At the default
+    # the timing tests still race here: test_keepalive_is_enabled (sync) failed with
+    # "AssertionError: 0.0 not greater than 0" at tests/sync/test_client.py:156 in
+    # graph d8f66fae-0d58-441f-8bbd-d8ddf28494b7, osx-arm64 py3.15 only.
+    - export WEBSOCKETS_TESTS_TIMEOUT_FACTOR=500  # [osx and arm64]
     # Tests on Windows randomly hang or fail to start without any issue.
     - pytest {{ ignore_tests }} -v gh/tests  # [unix]
     - websockets --version
