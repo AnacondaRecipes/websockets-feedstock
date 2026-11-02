@@ -38,6 +38,13 @@ requirements:
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_server.py" %}  # [linux]
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/asyncio/test_router.py" %}  # [linux]
 {% set ignore_tests = ignore_tests + " --ignore=gh/tests/sync/test_connection.py" %}  # [osx]
+# Flaky upstream test on osx-arm64 (2 of 5 runs in graph 146762fe, py3.11 and py3.12,
+# passed on linux-64/linux-aarch64 and on py3.13+): tests/sync/test_client.py::test_reconnect
+# races the server's first-iteration sleep(3*MS) against the client's open_timeout=3*MS,
+# so the first connection sometimes opens and the test sees 3 successful reconnects
+# instead of 2 (AssertionError: 3 != 2 at test_client.py:220). Upstream still asserts
+# the same counts in 17.4, so deselect instead of patching the test.
+{% set ignore_tests = ignore_tests + " --deselect=gh/tests/sync/test_client.py::ClientTests::test_reconnect" %}  # [osx and arm64]
 test:
   source_files:
     - gh/tests
